@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitButton } from '@/components/SubmitButton';
-import { BelajarNextJsBackEndNewClient, City, CityDetailModel, Province } from '@/functions/swagger/BelajarNextJsBackEndNew';
+import { BelajarNextJsBackEndNewClient, Product, ProductDetailModel, Brand } from '@/functions/swagger/BelajarNextJsBackEndNew';
 import Link from 'next/link';
 import { InputText } from '@/components/FormControl';
 import { Select, Spin, notification } from 'antd';
@@ -22,10 +22,25 @@ import { useRouter } from 'next/router';
 
 const FormSchema = z.object({
     name: z.string().nonempty({
-        message: 'Nama tidak boleh kosong'
+        message: 'Nama Produk tidak boleh kosong'
     }),
-    provinceId: z.string().nonempty({
-        message: 'Province tidak boleh kosong'
+    brandId: z.string().nonempty({
+        message: 'Brand tidak boleh kosong'
+    }),
+    description: z.string().nonempty({
+        message: 'Deskripsi tidak boleh kosong'
+    }),
+    price: z.number({
+        invalid_type_error: 'Price harus angka dan tidak boleh kosong'
+    }) &&
+    z.number().min(1000, {
+        message: 'Price harus lebih dari 1000'
+    }),
+    quantity: z.number({
+        invalid_type_error: 'Quantity harus angka dan tidak boleh kosong'
+    }) &&
+    z.number().min(1, {
+        message: 'Quantity minimal 1'
     }),
 });
 
@@ -33,9 +48,9 @@ type FormDataType = z.infer<typeof FormSchema>;
 
 const EditForm: React.FC<{
     id: string,
-    city: City,
+    product: Product,
     onEdited: () => void,
-}> = ({ id, city, onEdited }) => {
+}> = ({ id, product, onEdited }) => {
 
     const {
         handleSubmit,
@@ -45,8 +60,11 @@ const EditForm: React.FC<{
         control
     } = useForm<FormDataType>({
         defaultValues: {
-            name: city.name,
-            provinceId: city.provinceId
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            quantity: product.quantity,
+            brandId: product.brandId,
         },
         resolver: zodResolver(FormSchema)
     });
@@ -56,15 +74,18 @@ const EditForm: React.FC<{
 
         try {
             const client = new BelajarNextJsBackEndNewClient('http://localhost:3000/api/be');
-            await client.updateCity(id, {
+            await client.updateProduct(id, {
                 name: data.name,
-                provinceId: data.provinceId
+                description: data.description,
+                price: data.price,
+                quantity: data.quantity,
+                brandId: data.brandId,
             });
             reset(data);
             onEdited();
             notification.success({
                 message: 'Success',
-                description: 'Successfully edited city data',
+                description: 'Successfully edited product data',
                 placement: 'bottomRight',
             });
         } catch (error) {
@@ -75,9 +96,9 @@ const EditForm: React.FC<{
     const [search, setSearch] = useState('');
     const params = new URLSearchParams();
     params.append('search', search);
-    const provincesUri = '/api/be/api/Provinces?' + params.toString();
+    const brandsUri = '/api/be/api/Brands?' + params.toString();
     const fetcher = useSwrFetcherWithAccessToken();
-    const { data, isLoading, isValidating } = useSwr<Province[]>(provincesUri, fetcher);
+    const { data, isLoading, isValidating } = useSwr<Brand[]>(brandsUri, fetcher);
 
     const setSearchDebounced = debounce((t: string) => setSearch(t), 300);
 
@@ -87,8 +108,8 @@ const EditForm: React.FC<{
             value: Q.id
         };
     }) ?? [{
-        label: city.name,
-        value: city.id
+        label: product.name,
+        value: product.id
     }];
 
     return (
@@ -98,11 +119,26 @@ const EditForm: React.FC<{
                 <InputText id='name' {...register('name')}></InputText>
                 <p className='text-red-500'>{errors['name']?.message}</p>
             </div>
+            <div>
+                    <label htmlFor='description'>Description</label>
+                    <InputText id='description' {...register('description')}></InputText>
+                    <p className='text-red-500'>{errors['description']?.message}</p>
+                </div>
+                <div>
+                    <label htmlFor='price'>Price</label>
+                    <InputText id='price' {...register('price', { valueAsNumber: true })}></InputText>
+                    <p className='text-red-500'>{errors['price']?.message}</p>
+                </div>
+                <div>
+                    <label htmlFor='quantity'>Quantity</label>
+                    <InputText id='quantity' {...register('quantity', { valueAsNumber: true })}></InputText>
+                    <p className='text-red-500'>{errors['quantity']?.message}</p>
+                </div>
             <div className='mt-5'>
-                <label htmlFor='province'>Province</label>
+                <label htmlFor='brand'>Brand</label>
                 <Controller
                     control={control}
-                    name='provinceId'
+                    name='brandId'
                     render={({ field }) => (
                         <Select
                             className='block'
@@ -117,7 +153,7 @@ const EditForm: React.FC<{
                     )}
                 ></Controller>
 
-                <p className='text-red-500'>{errors['provinceId']?.message}</p>
+                <p className='text-red-500'>{errors['brandId']?.message}</p>
             </div>
             <div className='mt-5'>
                 <SubmitButton>Submit</SubmitButton>
@@ -130,9 +166,9 @@ const IndexPage: Page = () => {
 
     const router = useRouter();
     const { id } = router.query;
-    const cityDetailUri = id ? `/api/be/api/Cities/${id}` : undefined;
+    const productDetailUri = id ? `/api/be/api/Products/${id}` : undefined;
     const fetcher = useSwrFetcherWithAccessToken();
-    const { data, mutate } = useSwr<CityDetailModel>(cityDetailUri, fetcher);
+    const { data, mutate } = useSwr<ProductDetailModel>(productDetailUri, fetcher);
 
     function renderForm() {
         if (!id || !data || typeof id !== 'string') {
@@ -140,16 +176,16 @@ const IndexPage: Page = () => {
         }
 
         return (
-            <EditForm id={id} city={data} onEdited={() => mutate()}></EditForm>
+            <EditForm id={id} product={data} onEdited={() => mutate()}></EditForm>
         );
     }
 
     return (
         <div>
-            <Title>Edit City Data</Title>
-            <Link href='/city'>Return to Index</Link>
+            <Title>Edit Product Data</Title>
+            <Link href='/product'>Return to Index</Link>
 
-            <h2 className='mb-5 text-3xl'>Edit City Data</h2>
+            <h2 className='mb-5 text-3xl'>Edit Product Data</h2>
             {renderForm()}
         </div>
     );

@@ -10,7 +10,7 @@
   },
   "codeGenerators": {
     "openApiToTypeScriptClient": {
-      "className": "BelajarNextJsBackEndClient",
+      "className": "{controller}Client",
       "moduleName": "",
       "namespace": "",
       "typeScriptVersion": 4.3,
@@ -69,7 +69,7 @@
       "enumNameGeneratorType": null,
       "serviceHost": null,
       "serviceSchemes": null,
-      "output": "BelajarNextJsBackEnd.ts",
+      "output": "BelajarNextJsBackEndNew.ts",
       "newLineBehavior": "Auto"
     }
   }

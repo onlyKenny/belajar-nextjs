@@ -5,7 +5,7 @@ import { Page } from '@/types/Page';
 import { useRouter } from 'next/router';
 import { useSwrFetcherWithAccessToken } from '@/functions/useSwrFetcherWithAccessToken';
 import useSwr from 'swr';
-import { BelajarNextJsBackEndNewClient, Province } from '@/functions/swagger/BelajarNextJsBackEndNew';
+import { BelajarNextJsBackEndNewClient, Brand } from '@/functions/swagger/BelajarNextJsBackEndNew';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,7 +15,7 @@ import { Spin, notification } from 'antd';
 
 const FormSchema = z.object({
     name: z.string().nonempty({
-        message: 'Nama tidak boleh kosong'
+        message: 'Nama Brand tidak boleh kosong'
     })
 });
 
@@ -42,7 +42,7 @@ const EditForm: React.FC<{
     async function onSubmit(data: FormDataType) {
         try {
             const client = new BelajarNextJsBackEndNewClient('http://localhost:3000/api/be');
-            await client.updateProvince(id, {
+            await client.updateBrand(id, {
                 name: data.name
             });
             reset({
@@ -78,8 +78,8 @@ const IndexPage: Page = () => {
     const { id } = router.query;
 
     const fetcher = useSwrFetcherWithAccessToken();
-    const provinceDetailUri = id ? `/api/be/api/Provinces/${id}` : undefined;
-    const { data, mutate } = useSwr<Province>(provinceDetailUri, fetcher);
+    const brandDetailUri = id ? `/api/be/api/Brands/${id}` : undefined;
+    const { data, mutate } = useSwr<Brand>(brandDetailUri, fetcher);
 
     function renderForm() {
         if (!id) {
@@ -108,10 +108,10 @@ const IndexPage: Page = () => {
 
     return (
         <div>
-            <Title>Edit Province Data</Title>
-            <Link href='/province'>Return to Index</Link>
+            <Title>Edit Brand Data</Title>
+            <Link href='/brand'>Return to Index</Link>
 
-            <h2 className='mb-5 text-3xl'>Edit Province Data</h2>
+            <h2 className='mb-5 text-3xl'>Edit Brand Data</h2>
             {renderForm()}
         </div>
     );

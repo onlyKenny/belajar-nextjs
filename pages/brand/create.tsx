@@ -15,7 +15,7 @@ import Link from 'next/link';
 
 const FormSchema = z.object({
     name: z.string().nonempty({
-        message: 'Nama tidak boleh kosong'
+        message: 'Nama Brand tidak boleh kosong'
     })
 });
 
@@ -37,7 +37,7 @@ const IndexPage: Page = () => {
 
         try {
             const client = new BelajarNextJsBackEndNewClient('http://localhost:3000/api/be');
-            await client.createProvince({
+            await client.createBrand({
                 name: data.name
             });
             reset();
@@ -48,10 +48,10 @@ const IndexPage: Page = () => {
 
     return (
         <div>
-            <Title>Create New province</Title>
-            <Link href='/province'>Return to Index</Link>
+            <Title>Create New brand</Title>
+            <Link href='/brand'>Return to Index</Link>
             
-            <h2 className='mb-5 text-3xl'>Create New Province</h2>
+            <h2 className='mb-5 text-3xl'>Create New Brand</h2>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div>
                     <label htmlFor='name'>Name</label>

@@ -1,6 +1,6 @@
 import { WithDefaultLayout } from '@/components/DefautLayout';
 import { Title } from '@/components/Title';
-import { BelajarNextJsBackEndClient, CityDataGridItem } from '@/functions/swagger/BelajarNextJsBackEnd';
+import { BelajarNextJsBackEndNewClient, CityDataGridItem } from '@/functions/swagger/BelajarNextJsBackEndNew';
 import { useSwrFetcherWithAccessToken } from '@/functions/useSwrFetcherWithAccessToken';
 import { Page } from '@/types/Page';
 import { faEdit, faPlus, faRemove } from '@fortawesome/free-solid-svg-icons';
@@ -34,7 +34,7 @@ const CityTableRow: React.FC<{
                 }
 
                 try {
-                    const client = new BelajarNextJsBackEndClient('http://localhost:3000/api/be');
+                    const client = new BelajarNextJsBackEndNewClient('http://localhost:3000/api/be');
                     await client.deleteCity(city.id);
                     onDeleted();
                 } catch (err) {
